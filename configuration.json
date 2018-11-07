@@ -1,0 +1,1 @@
+{"server":{"listento":":8080","readtimeout":"3000000000", "writetimeout":"3000000000" }, "endpoints":[{"path":"/pippo", "handler":"./plugins/handlers/pippoHandler.so", "middlewares":[{"handler":"./plugins/middlewares/Method.so", "params":"GET|POST"}]}]}
