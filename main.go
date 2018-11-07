@@ -8,7 +8,7 @@ import (
         "os"
         "time"
         "plugin"
-        bootstrap "./bootstrap"
+        bootstrap "github.com/Bebbolus/gostron/bootstrap"
 )
 
 //source configuration struct to map the json configuration file

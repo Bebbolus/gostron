@@ -2,7 +2,7 @@ package main
 
 import (
     "net/http"
-    bootstrap "./bootstrap"
+    bootstrap "github.com/Bebbolus/gostron/bootstrap"
     "strings"
 )
 
