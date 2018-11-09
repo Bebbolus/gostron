@@ -41,6 +41,7 @@ func ReadConfiguration(confFile string) (sourceConfig, error){
     if decodingErr != nil {
         return Conf, decodingErr
     }
+    // use instead err = json.Unmarshal(file, Conf)?
     return Conf, nil
 }
 
@@ -56,6 +57,11 @@ type Handler interface{
 //local Middlewares handler plugin interface
 type Middleware interface{
         Pass()
+}
+
+func kill(msg) {
+  fmt.Println(msg)
+  os.Exit(1)
 }
 
 //start point
@@ -74,16 +80,14 @@ func main() {
             // 1. open the so file to load the symbols
             plug, err := plugin.Open(v.Handler)
             if err != nil {
-                fmt.Println(err)
-                os.Exit(1)
+                kill(err)
             }
 
             // 2. look up a symbol (an exported function or variable)
             // in this case, variable Controller
             symController, err := plug.Lookup("Handler")
             if err != nil {
-                fmt.Println(err)
-                os.Exit(1)
+                kill(err)
             }
 
             // 3. Assert that loaded symbol is of a desired type
@@ -91,8 +95,7 @@ func main() {
             var handler Handler
             handler, ok := symController.(Handler)
             if !ok {
-                fmt.Println("unexpected type from module symbol")
-                os.Exit(1)
+                kill("unexpected type from module symbol")
             }
 
             var chain []bootstrap.Gate
@@ -109,15 +112,13 @@ func main() {
                 // 1. open the so file to load the symbols
                 plug, midErr := plugin.Open(mid.Handler)
                 if midErr != nil {
-                    fmt.Println(midErr)
-                    os.Exit(1)
+                    kill(midErr)
                 }
                 // 2. look up a symbol (an exported function or variable)
                 // in this case, function Pass()
                 symFunc, midErr := plug.Lookup("Pass")
                 if midErr != nil {
-                    fmt.Println(midErr)
-                    os.Exit(1)
+                    kill(midErr)
                 }
 
                 //chain = append(chain, symFunc.(func() bootstrap.Gate))
