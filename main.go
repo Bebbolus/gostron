@@ -1,18 +1,19 @@
 package main
 
 import (
+        "strconv"
         "log"
         "net/http"
         "fmt"
-        "encoding/json"
         "os"
         "time"
         "plugin"
         bootstrap "github.com/Bebbolus/gostron/bootstrap"
+        configmanager "github.com/Bebbolus/gostron/libs"
 )
 
 //source configuration struct to map the json configuration file
-type sourceConfig struct {
+type routes struct {
 	Endpoints []struct {
 		Handler string `json:"handler"`
         Middlewares []struct {
@@ -21,29 +22,18 @@ type sourceConfig struct {
 		} `json:"middlewares"`
 		Path    string `json:"path"`
 	} `json:"endpoints"`
-	Server struct {
-		Listento     string `json:"listento"`
-		Readtimeout  time.Duration `json:"readtimeout"`
-		Writetimeout time.Duration `json:"writetimeout"`
-	} `json:"server"`
 }
 
-//read source configuration file and map into local struct
-func ReadConfiguration(confFile string) (sourceConfig, error){
-    Conf := sourceConfig{}
-    file, err := os.Open(confFile)
-    defer file.Close()
-    if err != nil {
-        return Conf, err
-    }
-    decoder := json.NewDecoder(file)
-    decodingErr := decoder.Decode(&Conf)
-    if decodingErr != nil {
-        return Conf, decodingErr
-    }
-    // use instead err = json.Unmarshal(file, Conf)?
-    return Conf, nil
+var RoutesConf routes
+
+type server struct {
+    Listento     string `json:"listento"`
+    Readtimeout  string `json:"readtimeout"`
+    Writetimeout string `json:"writetimeout"`
 }
+
+var ServerConf server
+
 
 /* PLUGINS */
 
@@ -59,23 +49,41 @@ type Middleware interface{
         Pass()
 }
 
-func kill(msg) {
+func kill(msg interface{}) {
   fmt.Println(msg)
   os.Exit(1)
 }
 
 //start point
 func main() {
-        configuration, _ := ReadConfiguration("configuration.json")
+        err :=configmanager.ReadFromJson(&ServerConf, "configurations/server.json")
+        if err != nil {
+            kill(err)
+        }
+
+        err =configmanager.ReadFromJson(&RoutesConf, "configurations/routes.json")
+        if err != nil {
+            kill(err)
+        }
+
+        readtimeout, err := strconv.Atoi(ServerConf.Readtimeout)
+        if err != nil {
+            kill(err)
+        }
+        writetimeout, err := strconv.Atoi(ServerConf.Writetimeout)
+        if err != nil {
+            kill(err)
+        }
+
 
         //SET UP SERVER TIMEOUT
         srv := &http.Server{
-            ReadTimeout: configuration.Server.Readtimeout * time.Second,
-            WriteTimeout: configuration.Server.Writetimeout * time.Second,
-            Addr:configuration.Server.Listento,
+            ReadTimeout: time.Duration(readtimeout) * time.Second,
+            WriteTimeout: time.Duration(writetimeout) * time.Second,
+            Addr:ServerConf.Listento,
         }
 
-        for _,v := range configuration.Endpoints{
+        for _,v := range RoutesConf.Endpoints{
             // load module
             // 1. open the so file to load the symbols
             plug, err := plugin.Open(v.Handler)
@@ -125,9 +133,7 @@ func main() {
                 chain = append(chain, symFunc.(func(string) bootstrap.Gate)(mid.Params) )
 
             }
-            /*
-                fine
-            */
+            // fine
 
             // 4. use the module to handle the request
             http.HandleFunc(v.Path, bootstrap.Chain(handler.Fire, chain...))
@@ -140,4 +146,5 @@ func main() {
 
         //SERVER START AND ERROR MANAGEMENT
         log.Fatal(srv.ListenAndServe(),mux)
+
 }
