@@ -1,1 +1,1 @@
-{"endpoints":[{"path":"/pippo", "handler":"./plugins/handlers/pippoHandler.so", "middlewares":[{"handler":"./plugins/middlewares/Method.so", "params":"GET|POST"}]}]}
+{"endpoints":[{"path":"/first", "handler":"./plugins/handlers/mainHandler.so", "middlewares":[{"handler":"./plugins/middlewares/Method.so", "params":"GET|POST"}]}]}
