@@ -1,4 +1,4 @@
-# gostron
+# Gostron
 golang webserver with pluggable route controller
 
 ## Scope
