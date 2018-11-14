@@ -11,6 +11,21 @@ It run only on linux because of go plugin support.
 - configure routes in the configurations/routes.json file
 - configure server in the configurations/server.json file
 
+### Tools
+the create.sh script provide scaffold to make your middlewares and handlers.
+executing command:
+
+```bash
+  $ ./create.sh handler mioHandler
+```
+it will produce a plugins/handlers/mioHandler.go file with the structure needed to use it in the server, as the same of
+
+```bash
+  $ ./create.sh middleware mioMiddleware
+```
+that will create the plugins/middlewares/mioMiddleware.go file.
+
+
 ### Building
 once you have finish configurations and created the handlers/middlewares plugins, in shell run the command:
 
