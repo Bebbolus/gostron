@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	bootstrap "github.com/Bebbolus/gostron/bootstrap"
-	configmanager "github.com/Bebbolus/gostron/libs"
 	"log"
 	"net/http"
 	"os"
@@ -55,12 +53,12 @@ func kill(msg interface{}) {
 
 //start point
 func main() {
-	err := configmanager.ReadFromJson(&ServerConf, "configurations/server.json")
+	err := ReadFromJson(&ServerConf, "configurations/server.json")
 	if err != nil {
 		kill(err)
 	}
 
-	err = configmanager.ReadFromJson(&RoutesConf, "configurations/routes.json")
+	err = ReadFromJson(&RoutesConf, "configurations/routes.json")
 	if err != nil {
 		kill(err)
 	}
@@ -104,7 +102,7 @@ func main() {
 			kill("unexpected type from module symbol")
 		}
 
-		var chain []bootstrap.Gate
+		var chain []Gate
 
 		/*
 		   per ogni middleware configurato da eseguire su questo path:
@@ -127,14 +125,15 @@ func main() {
 				kill(midErr)
 			}
 
-			//chain = append(chain, symFunc.(func() bootstrap.Gate))
-			chain = append(chain, symFunc.(func(string) bootstrap.Gate)(mid.Params))
+            newMiddleware := Gate(symFunc.(func(string) func(http.HandlerFunc) http.HandlerFunc)(mid.Params))
+
+			chain = append(chain, newMiddleware)
 
 		}
 		// fine
 
 		// 4. use the module to handle the request
-		http.HandleFunc(v.Path, bootstrap.Chain(handler.Fire, chain...))
+		http.HandleFunc(v.Path, Chain(handler.Fire, chain...))
 
 	}
 	//best practise: start a local istance of server mux to avoid imported lib to define malicious handler

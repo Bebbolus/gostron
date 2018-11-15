@@ -2,7 +2,7 @@
    This pakage define the entity and method that both Http server init and Middlewares will use
 */
 
-package bootstrap
+package main
 
 import (
 	"net/http"
@@ -10,7 +10,6 @@ import (
 
 type Gate func(http.HandlerFunc) http.HandlerFunc
 
-// Chain applies Gate to a http.HandlerFunc
 func Chain(f http.HandlerFunc, middlewares ...Gate) http.HandlerFunc {
 	for _, m := range middlewares {
 		f = m(f)

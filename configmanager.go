@@ -1,4 +1,4 @@
-package configmanager
+package main 
 
 import (
 	"encoding/json"

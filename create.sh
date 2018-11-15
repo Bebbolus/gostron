@@ -22,29 +22,29 @@ EOF
 create_middleware(){
 	cat << EOF > plugins/middlewares/$1.go 
 package main
-
+  
 import (
-	bootstrap "github.com/Bebbolus/gostron/bootstrap"
-	"net/http"
-	"strings"
+    "net/http"
+    "strings"
 )
 
-func Pass(m string) bootstrap.Gate {
-	// Create a new Middleware
-	return func(f http.HandlerFunc) http.HandlerFunc {
-		// Define the http.HandlerFunc
-		return func(w http.ResponseWriter, r *http.Request) {
-			//MIDDLEWARE CORE THINGS
-			if 1==1{
-				// Call the next middleware/handler in chain
-				f(w, r)
-				return
-			}
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			return
-		}
-	}
+func Pass(m string) func(http.HandlerFunc) http.HandlerFunc {
+    return func(f http.HandlerFunc) http.HandlerFunc {
+        // Define the http.HandlerFunc
+        return func(w http.ResponseWriter, r *http.Request) {
+            //MIDDLEWARE CORE THINGS
+            if 1==1 {
+                // Call the next middleware/handler in chain
+                f(w, r)
+                return
+            }
+            http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+            return
+        }
+    }
 }
+
+
 EOF
 }
 
