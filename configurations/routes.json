@@ -1,1 +1,14 @@
-{"endpoints":[{"path":"/first", "handler":"./plugins/handlers/mainHandler.so", "middlewares":[{"handler":"./plugins/middlewares/Method.so", "params":"GET|POST"}]}]}
+{
+   "endpoints":[
+      {
+         "path":"/first",
+         "handler":"./plugins/handlers/general.so",
+         "middlewares":[
+            {
+               "handler":"./plugins/middlewares/method.so",
+               "params":"GET|POST"
+            }
+         ]
+      }
+   ]
+}
