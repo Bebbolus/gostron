@@ -54,3 +54,9 @@ if you want to remove all compiled files, run:
 - routing configuration test: searh for duplicated or wrong path, search for required plugins
 - http test
 - performance test
+### Desired features
+- server config to REDIRECT HTTP TO HTTPS
+- middleware: CLIENT AUTHENTICATION
+- server config to enable HTTPS: use crypto/tls package with ability to rotate TLS session ticket keys by default
+- JWT API auth for javascript frontend framework like angular
+- csrf token for request validation
