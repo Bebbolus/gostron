@@ -10,6 +10,16 @@ import (
 	"time"
 )
 
+type Gate func(http.HandlerFunc) http.HandlerFunc
+
+func Chain(f http.HandlerFunc, middlewares ...Gate) http.HandlerFunc {
+    for _, m := range middlewares {
+        f = m(f)
+    }
+    return f
+}
+
+
 //source configuration struct to map the json configuration file
 type routes struct {
 	Endpoints []struct {
