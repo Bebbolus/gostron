@@ -8,6 +8,8 @@ import (
 	"plugin"
 	"strconv"
 	"time"
+    "encoding/json"
+    "io/ioutil"
 )
 
 type Gate func(http.HandlerFunc) http.HandlerFunc
@@ -61,6 +63,13 @@ func kill(msg interface{}) {
 	os.Exit(1)
 }
 
+func must(err error) {
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+}
+
 func ReadFromJson(t interface{}, filename string) error {
 
     jsonFile, err := ioutil.ReadFile(filename)
@@ -79,15 +88,8 @@ func ReadFromJson(t interface{}, filename string) error {
 
 //start point
 func main() {
-	err := ReadFromJson(&ServerConf, "configurations/server.json")
-	if err != nil {
-		kill(err)
-	}
-
-	err = ReadFromJson(&RoutesConf, "configurations/routes.json")
-	if err != nil {
-		kill(err)
-	}
+    must(ReadFromJson(&ServerConf, "configurations/server.json"))
+    must(ReadFromJson(&RoutesConf, "configurations/routes.json"))
 
 	readtimeout, err := strconv.Atoi(ServerConf.Readtimeout)
 	if err != nil {
@@ -122,11 +124,11 @@ func main() {
 
 		// 3. Assert that loaded symbol is of a desired type
 		// in this case interface type Handler (defined above)
-		var handler Handler
-		handler, ok := symController.(Handler)
-		if !ok {
-			kill("unexpected type from module symbol")
-		}
+        var handler Handler
+        handler, ok := symController.(Handler)
+        if !ok {
+            kill("unexpected type from module symbol")
+        }
 
 		var chain []Gate
 
@@ -151,21 +153,19 @@ func main() {
 				kill(midErr)
 			}
 
-            newMiddleware := Gate(symFunc.(func(string) func(http.HandlerFunc) http.HandlerFunc)(mid.Params))
+            f := symFunc.(func(string) func(http.HandlerFunc) http.HandlerFunc)
+            nmid := Gate(f(mid.Params))
 
-			chain = append(chain, newMiddleware)
+			chain = append(chain, nmid)
 
 		}
-		// fine
-
 		// 4. use the module to handle the request
 		http.HandleFunc(v.Path, Chain(handler.Fire, chain...))
 
 	}
 	//best practise: start a local istance of server mux to avoid imported lib to define malicious handler
-	mux := http.NewServeMux()
 
 	//SERVER START AND ERROR MANAGEMENT
-	log.Fatal(srv.ListenAndServe(), mux)
+	log.Fatal(srv.ListenAndServe(), http.NewServeMux())
 
 }
