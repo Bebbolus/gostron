@@ -61,6 +61,22 @@ func kill(msg interface{}) {
 	os.Exit(1)
 }
 
+func ReadFromJson(t interface{}, filename string) error {
+
+    jsonFile, err := ioutil.ReadFile(filename)
+    if err != nil {
+        return err
+    }
+    err = json.Unmarshal([]byte(jsonFile), t)
+    if err != nil {
+        log.Fatalf("error: %v", err)
+        return err
+    }
+
+    return nil
+}
+
+
 //start point
 func main() {
 	err := ReadFromJson(&ServerConf, "configurations/server.json")
