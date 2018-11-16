@@ -16,14 +16,14 @@ the create.sh script provide scaffold to make your middlewares and handlers.
 executing command:
 
 ```bash
-  $ ./create.sh handler mioHandler
+  $ ./create.sh handler mio
 ```
-it will produce a plugins/handlers/mioHandler.go file with the structure needed to use it in the server, as the same of
+it will produce a plugins/handlers/mio.go file with the structure needed to use it in the server, as the same of
 
 ```bash
-  $ ./create.sh middleware mioMiddleware
+  $ ./create.sh middleware mio
 ```
-that will create the plugins/middlewares/mioMiddleware.go file.
+that will create the plugins/middlewares/mio.go file.
 
 
 ### Building
@@ -45,9 +45,6 @@ if you want to remove all compiled files, run:
 - create basic auth middleware
 - create a "only-admin-access" middleware
 - https server
-### Scaffold creation
-- create shell command that make a pre-compiled file for handler
-- create shell command that make a pre-compiled file for middleware
 ### Test
 - server configuration test
 - plugin test: if the package don't export the right function and variables, fail
