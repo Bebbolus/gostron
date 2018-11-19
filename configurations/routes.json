@@ -2,7 +2,7 @@
    "endpoints":[
       {
          "path":"/first",
-         "handler":"./plugins/handlers/general.so",
+         "controller":"./plugins/controllers/general.so",
          "middlewares":[
             {
                "handler":"./plugins/middlewares/method.so",

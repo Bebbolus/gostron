@@ -5,13 +5,18 @@ import (
 	"strings"
 )
 
-// Method ensures that url can only be requested with a specific method, else returns a 400 Bad Request
-func Pass(m string) func(http.HandlerFunc) http.HandlerFunc {
+type middleware string
+
+/*
+	Method middleware ensures that url can only be requested with a specific method,
+	else returns a 400 Bad Request
+*/
+func (m middleware) Pass(args string) func(http.HandlerFunc) http.HandlerFunc {
 	return func(f http.HandlerFunc) http.HandlerFunc {
 		// Define the http.HandlerFunc
 		return func(w http.ResponseWriter, r *http.Request) {
 			//MIDDLEWARE CORE THINGS
-			acceptedMethods := strings.Split(m, "|")
+			acceptedMethods := strings.Split(args, "|")
 			for _, v := range acceptedMethods {
 				if r.Method == v {
 					// Call the next middleware/handler in chain
@@ -24,3 +29,6 @@ func Pass(m string) func(http.HandlerFunc) http.HandlerFunc {
 		}
 	}
 }
+
+// export as symbol named "Middleware"
+var Middleware middleware

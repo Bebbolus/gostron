@@ -1,1 +1,5 @@
-{"listento":":8080","readtimeout":"3000000000", "writetimeout":"3000000000" }
+{
+    "listento": ":8080",
+    "readtimeout": "3000000000",
+    "writetimeout": "3000000000"
+}

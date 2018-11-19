@@ -1,31 +1,27 @@
+//
+// Copyright © 2018 Roberto Della Fornace
+// Implement a modular web server in Go
+// License: MIT included in repository
+//
+
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"plugin"
 	"strconv"
 	"time"
-    "encoding/json"
-    "io/ioutil"
 )
 
-type Gate func(http.HandlerFunc) http.HandlerFunc
-
-func Chain(f http.HandlerFunc, middlewares ...Gate) http.HandlerFunc {
-    for _, m := range middlewares {
-        f = m(f)
-    }
-    return f
-}
-
-
-//source configuration struct to map the json configuration file
+//source routes configuration struct to load from the json configuration file
 type routes struct {
 	Endpoints []struct {
-		Handler     string `json:"handler"`
+		Controller  string `json:"controller"`
 		Middlewares []struct {
 			Handler string `json:"handler"`
 			Params  string `json:"params"`
@@ -36,6 +32,7 @@ type routes struct {
 
 var RoutesConf routes
 
+//source server configuration struct to load from json configuration file
 type server struct {
 	Listento     string `json:"listento"`
 	Readtimeout  string `json:"readtimeout"`
@@ -46,51 +43,68 @@ var ServerConf server
 
 /* PLUGINS */
 
-//local Http hanlder plugin interface
-type Handler interface {
+//Controller is a local hanlder plugin interface
+type Controller interface {
 	Fire(w http.ResponseWriter, r *http.Request)
 }
 
 /* MIDDLEWARES */
 
-//local Middlewares handler plugin interface
+//Middleware is local handler plugin interface, it will return a Gate compatible function
 type Middleware interface {
-	Pass()
+	Pass(args string) func(http.HandlerFunc) http.HandlerFunc
 }
 
+//Gate is a type that describe the middleware functions that will be chained to the route
+type Gate func(http.HandlerFunc) http.HandlerFunc
+
+//Chain function concatenate the middlewares (typed as Gate function)
+func Chain(f http.HandlerFunc, middlewares ...Gate) http.HandlerFunc {
+	for _, m := range middlewares {
+		f = m(f)
+	}
+	return f
+}
+
+/* HELPER FUNCTIONS */
+//kill function print the message and then exit
 func kill(msg interface{}) {
 	fmt.Println(msg)
 	os.Exit(1)
 }
 
+//must function check if there is an error
 func must(err error) {
-    if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
-    }
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
-func ReadFromJson(t interface{}, filename string) error {
+//ReadFromJSON function load a json file into a struct or return error
+func ReadFromJSON(t interface{}, filename string) error {
 
-    jsonFile, err := ioutil.ReadFile(filename)
-    if err != nil {
-        return err
-    }
-    err = json.Unmarshal([]byte(jsonFile), t)
-    if err != nil {
-        log.Fatalf("error: %v", err)
-        return err
-    }
+	jsonFile, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal([]byte(jsonFile), t)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+		return err
+	}
 
-    return nil
+	return nil
 }
-
 
 //start point
 func main() {
-    must(ReadFromJson(&ServerConf, "configurations/server.json"))
-    must(ReadFromJson(&RoutesConf, "configurations/routes.json"))
 
+	//load configurations from files
+	must(ReadFromJSON(&ServerConf, "configurations/server.json"))
+	must(ReadFromJSON(&RoutesConf, "configurations/routes.json"))
+
+	//convert source json strings to integer where needed
 	readtimeout, err := strconv.Atoi(ServerConf.Readtimeout)
 	if err != nil {
 		kill(err)
@@ -100,67 +114,67 @@ func main() {
 		kill(err)
 	}
 
-	//SET UP SERVER TIMEOUT
+	//set server configurations
 	srv := &http.Server{
 		ReadTimeout:  time.Duration(readtimeout) * time.Second,
 		WriteTimeout: time.Duration(writetimeout) * time.Second,
 		Addr:         ServerConf.Listento,
 	}
 
+	// based on the source confguration routes, loop on every configuration and load relative plugins
+	// plugin.Open: If a path has already been opened, then the existing *Plugin is returned.
+	// It is safe for concurrent use by multiple goroutines.
 	for _, v := range RoutesConf.Endpoints {
-		// load module
-		// 1. open the so file to load the symbols
-		plug, err := plugin.Open(v.Handler)
+		// load module:
+		plug, err := plugin.Open(v.Controller)
+		if err != nil {
+			kill(err)
+		}
+		// look up for an exported Controller method
+		symController, err := plug.Lookup("Controller")
 		if err != nil {
 			kill(err)
 		}
 
-		// 2. look up a symbol (an exported function or variable)
-		// in this case, variable Controller
-		symController, err := plug.Lookup("Handler")
-		if err != nil {
-			kill(err)
+		// check that loaded symbol is type Controller
+		var controller Controller
+		controller, ok := symController.(Controller)
+		if !ok {
+			kill("The Controller module have wrong type")
 		}
 
-		// 3. Assert that loaded symbol is of a desired type
-		// in this case interface type Handler (defined above)
-        var handler Handler
-        handler, ok := symController.(Handler)
-        if !ok {
-            kill("unexpected type from module symbol")
-        }
-
+		//define new middleware chain
 		var chain []Gate
 
-		/*
-		   per ogni middleware configurato da eseguire su questo path:
-		       carica il plugin di quel middleware e lo carica
-		       cerca la variabile per i parametri e gli assegna il valore come da configurazione
-		       lo aggiunge alla catena
-		*/
-
+		// foreach middleware configured for the actual routepath
 		for _, mid := range v.Middlewares {
-			// load module
-			// 1. open the so file to load the symbols
+			// load middleware plugin
 			plug, midErr := plugin.Open(mid.Handler)
 			if midErr != nil {
 				kill(midErr)
 			}
-			// 2. look up a symbol (an exported function or variable)
-			// in this case, function Pass()
-			symFunc, midErr := plug.Lookup("Pass")
+			// look up the Pass function
+			symMiddleware, midErr := plug.Lookup("Middleware")
 			if midErr != nil {
 				kill(midErr)
 			}
 
-            f := symFunc.(func(string) func(http.HandlerFunc) http.HandlerFunc)
-            nmid := Gate(f(mid.Params))
+			// check that loaded symbol is type Middleware
+			var middleware Middleware
+			middleware, ok := symMiddleware.(Middleware)
+			if !ok {
+				kill("The middleware module have wrong type")
+			}
 
+			// build the gate function that contain the middleware instance
+			nmid := Gate(middleware.Pass(mid.Params))
+
+			// append to the middlewares chain
 			chain = append(chain, nmid)
 
 		}
 		// 4. use the module to handle the request
-		http.HandleFunc(v.Path, Chain(handler.Fire, chain...))
+		http.HandleFunc(v.Path, Chain(controller.Fire, chain...))
 
 	}
 	//best practise: start a local istance of server mux to avoid imported lib to define malicious handler
