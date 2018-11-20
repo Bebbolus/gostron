@@ -1,49 +1,54 @@
 #!/bin/bash
 
 create_handler(){
-	cat  <<EOF > plugins/handlers/$1.go
+	cat  <<EOF > plugins/controllers/$1.go
 package main
 
 import (
+	"fmt"
 	"net/http"
 )
 
-type handler string
+type controller string
 
-func (h handler) Fire(w http.ResponseWriter, r *http.Request) {
+func (h controller) Fire(w http.ResponseWriter, r *http.Request) {
 	## YOUR HANDLER CODE GOES HERE
 }
 
-// export as symbol named "Handler"
-var Handler handler
+// Controller exported name
+var Controller controller
 EOF
 }
 
 create_middleware(){
 	cat << EOF > plugins/middlewares/$1.go 
 package main
-  
+
 import (
-    "net/http"
-    "strings"
+	"net/http"
+	"strings"
 )
 
-func Pass(m string) func(http.HandlerFunc) http.HandlerFunc {
-    return func(f http.HandlerFunc) http.HandlerFunc {
-        // Define the http.HandlerFunc
-        return func(w http.ResponseWriter, r *http.Request) {
-            //MIDDLEWARE CORE THINGS
-            if 1==1 {
-                // Call the next middleware/handler in chain
-                f(w, r)
-                return
-            }
-            http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-            return
-        }
-    }
+type middleware string
+
+func (m middleware) Pass(args string) func(http.HandlerFunc) http.HandlerFunc {
+	return func(f http.HandlerFunc) http.HandlerFunc {
+		// Define the http.HandlerFunc
+		return func(w http.ResponseWriter, r *http.Request) {
+			//MIDDLEWARE CORE THINGS
+			if 1 ==1 {
+				// Call the next middleware/handler in chain
+				f(w, r)
+				return
+			}
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+	}
 }
 
+// Middleware exported symbol
+var Middleware middleware
 
 EOF
 }
