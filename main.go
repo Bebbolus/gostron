@@ -173,13 +173,12 @@ func main() {
 			chain = append(chain, nmid)
 
 		}
-		// 4. use the module to handle the request
+		// Use all the modules to handle the request
 		http.HandleFunc(v.Path, Chain(controller.Fire, chain...))
 
 	}
-	//best practise: start a local istance of server mux to avoid imported lib to define malicious handler
-
+	
 	//SERVER START AND ERROR MANAGEMENT
+	//best practise: start a local istance of server mux to avoid imported lib to define malicious handler
 	log.Fatal(srv.ListenAndServe(), http.NewServeMux())
-
 }
