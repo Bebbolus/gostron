@@ -38,6 +38,8 @@ if you want to remove all compiled files, run:
 ```bash
   $ make clean
 ```
+### Test
+the project have a test that work for standard configuration and plugin, you need to edit this if you want to test your own implementation
 
 ## TODO
 ### Example
