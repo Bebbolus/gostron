@@ -44,12 +44,8 @@ if you want to remove all compiled files, run:
 - create a ipfilter middleware
 - create basic auth middleware
 - create a "only-admin-access" middleware
-- https server
 ### Test
-- server configuration test
-- plugin test: if the package don't export the right function and variables, fail
 - routing configuration test: searh for duplicated or wrong path, search for required plugins
-- http test
 - performance test
 ### Desired features
 - server config to REDIRECT HTTP TO HTTPS
