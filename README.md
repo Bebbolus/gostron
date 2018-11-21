@@ -1,7 +1,7 @@
 # A modular web server in Go
 
 ![](https://cdn-images-1.medium.com/max/750/1*NZRlMTB55IffYytMDujUNA.png)
-<span class="figcaption_hack">Architecture Representation</span>
+<span class="figcaption_hack">Image 1: Architecture Representation</span>
 
 The target of this project is to inspect how to build a modular web server. It
 will send the requests through our pluggable modules: *middlewares *and
@@ -15,7 +15,7 @@ how would we like to use it?
 > some middlewares from a set.*
 
 ![](https://cdn-images-1.medium.com/max/1000/1*AP7etBWgIvojKOBmyekj1Q.png)
-<span class="figcaption_hack">Mapping middlewares and controller to an endpoint</span>
+<span class="figcaption_hack">Image 2: Mapping middlewares and controller to an endpoint</span>
 
 This kind of architecture is scalable, customizable and reusable. It enables us
 to make:
@@ -31,7 +31,7 @@ the same way, if you update the JWT plugin to use a new ash method, you have
 only to redeploy the plugin.
 
 ![](https://cdn-images-1.medium.com/max/1000/1*XyZklA8d9HCg5YNrOzuxSg.png)
-<span class="figcaption_hack">Distributed deployment example</span>
+<span class="figcaption_hack">Image 3: Distributed deployment example</span>
 
 ## Implementation
 
