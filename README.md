@@ -3,7 +3,7 @@
 ![](https://cdn-images-1.medium.com/max/750/1*NZRlMTB55IffYytMDujUNA.png)
 <span class="figcaption_hack">Architecture Representation</span>
 
-The target of this article is to inspect how to build a modular web server. It
+The target of this project is to inspect how to build a modular web server. It
 will send the requests through our pluggable modules: *middlewares *and
 *controller*.
 
