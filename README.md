@@ -1,4 +1,4 @@
-### A modular web server in Go
+# A modular web server in Go
 
 ![](https://cdn-images-1.medium.com/max/750/1*NZRlMTB55IffYytMDujUNA.png)
 <span class="figcaption_hack">Architecture Representation</span>
@@ -33,7 +33,7 @@ only to redeploy the plugin.
 ![](https://cdn-images-1.medium.com/max/1000/1*XyZklA8d9HCg5YNrOzuxSg.png)
 <span class="figcaption_hack">Distributed deployment example</span>
 
-#### Implementation
+## Implementation
 
 We can start building our routes configuration file. An example configuration
 can be a single route managed. We attach a plugin to check if the request HTTP
@@ -61,9 +61,9 @@ All other routes will return “404 not found”.
 Creating the file in this way, we can attach several middlewares to a route and
 use a middleware in several routes.
 
-### Build the core
+## Build the core
 
-#### Make the middleware chain architecture
+### Make the middleware chain architecture
 
 Our middleware concept will chain a set of functions. This functions will check
 the request and if it passes the filter, send it to the next function.
@@ -78,7 +78,7 @@ Gate is the type that represents the middleware function with arguments valued:
     	return f
     }
 
-#### Read the configurations
+### Read the configurations
 
 Now we can proceed on reading the configuration, mapping it to a struct (with
 [this ](https://mholt.github.io/json-to-go/)tool is very simple):
@@ -115,7 +115,7 @@ and make the function to read from JSON:
     return nil
     }
 
-#### Load the Plugins
+### Load the Plugins
 
 We can load plugins, using the plugin package. we can import all the exposed
 functions and variables
@@ -189,7 +189,7 @@ Load middleware modules to attach on the route:
       http.HandleFunc(v.Path, Chain(controller.Fire, chain...))
      }
 
-### Plugins Implementation
+## Plugins Implementation
 
 The package of a plugin needs to be “Main”.
 
@@ -207,7 +207,7 @@ Inside we create two folders, one for middlewares, one for controllers
     mkdir controller
     mkdir middlewares
 
-#### Build the Controllers
+### Build the Controllers
 
 Inside the plugins/controllers folder create `general.so`, this will be the HTTP
 Request handler:
@@ -227,7 +227,7 @@ Request handler:
     // Controller exported namevar 
     Controller controller
 
-#### Build the Middlewares
+### Build the Middlewares
 
 We build a method middleware that checks the HTTP Method, else returns a 400 Bad
 Request.
