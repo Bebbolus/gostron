@@ -177,7 +177,7 @@ func main() {
 		http.HandleFunc(v.Path, Chain(controller.Fire, chain...))
 
 	}
-	
+    log.Println("start HTTP listening on ", ServerConf.Listento)
 	//SERVER START AND ERROR MANAGEMENT
 	//best practise: start a local istance of server mux to avoid imported lib to define malicious handler
 	log.Fatal(srv.ListenAndServe(), http.NewServeMux())
