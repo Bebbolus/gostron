@@ -9,6 +9,10 @@
                "params":"GET|POST"
             }
          ]
+      },
+      {
+         "path":"/template",
+         "controller":"./plugins/controllers/templates.so"
       }
    ]
 }
